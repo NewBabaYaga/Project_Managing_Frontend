@@ -7,6 +7,7 @@ import ProjectsPage from './pages/ProjectsPage';
 import ProjectDashboard from './pages/ProjectDashboard';
 import TaskDetailPage from './pages/TaskDetailPage';
 import UserProfilePage from './pages/UserProfilePage';
+import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
   return (
@@ -27,7 +28,7 @@ export default function App() {
         </Route>
 
         {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
