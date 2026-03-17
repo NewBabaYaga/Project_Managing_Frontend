@@ -1,7 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { ArrowRightOnRectangleIcon, FolderIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { ArrowRightOnRectangleIcon, FolderIcon } from '@heroicons/react/24/outline';
 import Button from '../Shared/Button';
+import Avatar from '../Shared/Avatar';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -23,16 +24,13 @@ export default function Navbar() {
 
           {user && (
             <div className="flex items-center gap-3">
-              <Link
-                to="/profile"
-                className="flex items-center gap-2 text-sm text-gray-600 hover:text-indigo-600 transition"
-              >
-                <UserCircleIcon className="w-5 h-5" />
-                <span className="font-medium">{user.username}</span>
+              <Link to="/profile" className="flex items-center gap-2 text-sm text-gray-600 hover:text-indigo-600 transition">
+                <Avatar name={user.username} size="sm" />
+                <span className="font-medium hidden sm:inline">{user.username}</span>
               </Link>
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 <ArrowRightOnRectangleIcon className="w-4 h-4" />
-                Logout
+                <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>
           )}
