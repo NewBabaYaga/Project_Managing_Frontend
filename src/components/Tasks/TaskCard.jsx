@@ -1,7 +1,7 @@
 import Badge from '../Shared/Badge';
 import Button from '../Shared/Button';
 import { getStatusColor, getDifficultyColor, getDifficultyPoints, isDeveloper } from '../../utils/roleUtils';
-import { formatDateTime, isOverdue } from '../../utils/dateUtils';
+import { formatDateTime, isOverdue, isDueSoon } from '../../utils/dateUtils';
 import { ClockIcon, UserIcon, PaperClipIcon, ExclamationTriangleIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline';
 
 export default function TaskCard({
@@ -12,6 +12,7 @@ export default function TaskCard({
   const diffColor = getDifficultyColor(task.difficulty);
   const points = getDifficultyPoints(task.difficulty);
   const overdue = isOverdue(task.dueDate) && task.status !== 'Approved';
+  const dueSoon = !overdue && isDueSoon(task.dueDate) && task.status !== 'Approved';
 
   const isAssignedToMe = task.assignedToId === currentUserId;
   const isDevRole = isDeveloper(userRole);
@@ -35,7 +36,9 @@ export default function TaskCard({
 
   return (
     <div
-      className="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition cursor-pointer"
+      className={`bg-white rounded-lg border p-3 hover:shadow-sm transition cursor-pointer ${
+        overdue ? 'border-red-300 bg-red-50/30' : dueSoon ? 'border-orange-300 bg-orange-50/30' : 'border-gray-200'
+      }`}
       onClick={() => onClick?.(task)}
     >
       <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -58,6 +61,7 @@ export default function TaskCard({
       <div className="flex flex-wrap gap-1.5 mb-2">
         <Badge className={statusColor}>{task.status}</Badge>
         {overdue && <Badge className="bg-red-100 text-red-700">Overdue</Badge>}
+        {dueSoon && <Badge className="bg-orange-100 text-orange-700">Due soon</Badge>}
         {task.requiresAttachment && (
           <Badge className="bg-amber-50 text-amber-600 flex items-center gap-0.5">
             <PaperClipIcon className="w-3 h-3" />

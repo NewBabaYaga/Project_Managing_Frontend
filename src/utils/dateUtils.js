@@ -18,6 +18,14 @@ export const isOverdue = (dueDateStr) => {
   return new Date(dueDateStr) < new Date();
 };
 
+export const isDueSoon = (dueDateStr) => {
+  if (!dueDateStr) return false;
+  const due = new Date(dueDateStr);
+  const now = new Date();
+  const diff = due - now;
+  return diff > 0 && diff < 24 * 60 * 60 * 1000;
+};
+
 export const timeAgo = (dateStr) => {
   if (!dateStr) return '';
   const diff = Date.now() - new Date(dateStr).getTime();
