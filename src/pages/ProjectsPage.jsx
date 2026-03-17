@@ -6,12 +6,13 @@ import CreateProjectModal from '../components/Projects/CreateProjectModal';
 import Button from '../components/Shared/Button';
 import LoadingSpinner from '../components/Shared/LoadingSpinner';
 import { getProjects } from '../api/projectsApi';
-import { PlusIcon, FolderOpenIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, FolderOpenIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
+  const [search, setSearch] = useState('');
 
   const fetchProjects = async () => {
     try {
@@ -30,6 +31,10 @@ export default function ProjectsPage() {
     setProjects(prev => [project, ...prev]);
   };
 
+  const filtered = projects.filter(p =>
+    p.name.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -45,6 +50,19 @@ export default function ProjectsPage() {
           </Button>
         </div>
 
+        {projects.length > 0 && (
+          <div className="relative mb-6 max-w-sm">
+            <MagnifyingGlassIcon className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search projects..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+          </div>
+        )}
+
         {loading ? (
           <LoadingSpinner text="Loading projects..." />
         ) : projects.length === 0 ? (
@@ -57,9 +75,11 @@ export default function ProjectsPage() {
               Create Project
             </Button>
           </div>
+        ) : filtered.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-8">No projects match "{search}"</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {projects.map(p => <ProjectCard key={p.id} project={p} />)}
+            {filtered.map(p => <ProjectCard key={p.id} project={p} />)}
           </div>
         )}
       </div>
