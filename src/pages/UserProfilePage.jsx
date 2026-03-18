@@ -7,8 +7,9 @@ import Badge from '../components/Shared/Badge';
 import { getMyStats } from '../api/usersApi';
 import { useAuth } from '../context/AuthContext';
 import { getRoleBadgeColor } from '../utils/roleUtils';
+import Avatar from '../components/Shared/Avatar';
 import {
-  UserCircleIcon, ChartBarIcon, CheckCircleIcon,
+  ChartBarIcon, CheckCircleIcon,
   XCircleIcon, StarIcon, BuildingOffice2Icon
 } from '@heroicons/react/24/outline';
 
@@ -47,9 +48,7 @@ export default function UserProfilePage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center">
-            <UserCircleIcon className="w-10 h-10 text-indigo-500" />
-          </div>
+          <Avatar name={stats?.username || user?.username || ''} size="lg" className="w-16 h-16 text-xl" />
           <div>
             <h1 className="text-xl font-bold text-gray-900">{stats?.username || user?.username}</h1>
             <p className="text-sm text-gray-500">{stats?.email || user?.email}</p>
