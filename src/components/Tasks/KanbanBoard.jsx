@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TaskCard from './TaskCard';
 import LoadingSpinner from '../Shared/LoadingSpinner';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+
+const STORAGE_KEY = 'kanban_open_col';
 
 const COLUMNS = [
   { key: 'ToDo',       label: 'To Do',      accent: 'border-gray-400',   bg: 'bg-gray-100',    countBg: 'bg-gray-200 text-gray-700',         text: 'text-gray-700' },
@@ -14,7 +16,9 @@ export default function KanbanBoard({
   tasks, loading, userRole, currentUserId, groupMembers,
   onAccept, onOpenSubmit, onOpenReview, onTaskClick, onDelegate
 }) {
-  const [openColumn, setOpenColumn] = useState('ToDo');
+  const [openColumn, setOpenColumn] = useState(
+    () => localStorage.getItem(STORAGE_KEY) || 'ToDo'
+  );
 
   if (loading) return <LoadingSpinner text="Loading tasks..." />;
 
@@ -24,7 +28,13 @@ export default function KanbanBoard({
     if (tasksByStatus[t.status] !== undefined) tasksByStatus[t.status].push(t);
   });
 
-  const toggle = (key) => setOpenColumn(prev => (prev === key ? null : key));
+  const toggle = (key) => {
+    setOpenColumn(prev => {
+      const next = prev === key ? null : key;
+      if (next) localStorage.setItem(STORAGE_KEY, next);
+      return next;
+    });
+  };
 
   return (
     <div className="flex flex-col gap-2 w-full">
