@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import Navbar from '../components/Layout/Navbar';
 import Badge from '../components/Shared/Badge';
 import Button from '../components/Shared/Button';
+import Avatar from '../components/Shared/Avatar';
 import LoadingSpinner from '../components/Shared/LoadingSpinner';
 import { getTask } from '../api/tasksApi';
 import { getTaskComments, addTaskComment } from '../api/tasksApi';
@@ -145,11 +146,7 @@ export default function TaskDetailPage() {
               <div className="flex flex-col gap-3 mb-4">
                 {comments.map(c => (
                   <div key={c.id} className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-semibold text-indigo-700">
-                        {c.username.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
+                    <Avatar name={c.username} size="sm" className="mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="text-sm font-semibold text-gray-900">{c.username}</span>
