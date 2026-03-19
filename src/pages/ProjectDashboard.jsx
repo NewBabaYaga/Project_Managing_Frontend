@@ -13,6 +13,7 @@ import StatsCard from '../components/Stats/StatsCard';
 import RankingTable from '../components/Stats/RankingTable';
 import Button from '../components/Shared/Button';
 import Badge from '../components/Shared/Badge';
+import Avatar from '../components/Shared/Avatar';
 import LoadingSpinner from '../components/Shared/LoadingSpinner';
 import { getProject, getMembers, removeMember, assignManagerGroup } from '../api/projectsApi';
 import ChangeRoleModal from '../components/Projects/ChangeRoleModal';
@@ -420,11 +421,14 @@ export default function ProjectDashboard() {
                 <tbody>
                   {members.map(m => (
                     <tr key={m.userId} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4 font-medium text-gray-900">
-                        {m.username}
-                        {m.userId === user?.userId && (
-                          <Badge className="ml-2 bg-indigo-100 text-indigo-700">You</Badge>
-                        )}
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <Avatar name={m.username} size="sm" />
+                          <span className="font-medium text-gray-900">{m.username}</span>
+                          {m.userId === user?.userId && (
+                            <Badge className="bg-indigo-100 text-indigo-700">You</Badge>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3 px-4 text-gray-500">{m.email}</td>
                       <td className="py-3 px-4">
