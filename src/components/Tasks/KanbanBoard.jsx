@@ -19,12 +19,15 @@ export default function KanbanBoard({
   const [openColumn, setOpenColumn] = useState(
     () => localStorage.getItem(STORAGE_KEY) || 'ToDo'
   );
+  const [diffFilter, setDiffFilter] = useState('All');
 
   if (loading) return <LoadingSpinner text="Loading tasks..." />;
 
+  const filteredTasks = diffFilter === 'All' ? tasks : tasks.filter(t => t.difficulty === diffFilter);
+
   const tasksByStatus = {};
   COLUMNS.forEach(c => { tasksByStatus[c.key] = []; });
-  tasks.forEach(t => {
+  filteredTasks.forEach(t => {
     if (tasksByStatus[t.status] !== undefined) tasksByStatus[t.status].push(t);
   });
 
@@ -38,6 +41,22 @@ export default function KanbanBoard({
 
   return (
     <div className="flex flex-col gap-2 w-full">
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-xs text-gray-500 font-medium">Difficulty:</span>
+        {['All', 'Easy', 'Medium', 'Hard'].map(d => (
+          <button
+            key={d}
+            onClick={() => setDiffFilter(d)}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium transition ${
+              diffFilter === d
+                ? 'bg-indigo-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            {d}
+          </button>
+        ))}
+      </div>
       {COLUMNS.map(col => {
         const isOpen = openColumn === col.key;
         const count = tasksByStatus[col.key].length;
