@@ -12,7 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   getStatusColor, getDifficultyColor, getDifficultyPoints
 } from '../utils/roleUtils';
-import { formatDate, formatDateTime } from '../utils/dateUtils';
+import { formatDate, formatDateTime, timeAgo } from '../utils/dateUtils';
 import { getErrorMessage } from '../utils/errorUtils';
 import {
   ArrowLeftIcon, UserIcon, CalendarIcon, ClockIcon,
@@ -153,7 +153,7 @@ export default function TaskDetailPage() {
                         {c.userId === user?.userId && (
                           <span className="text-xs text-indigo-500">You</span>
                         )}
-                        <span className="text-xs text-gray-400">{formatDateTime(c.createdAt)}</span>
+                        <span className="text-xs text-gray-400" title={formatDateTime(c.createdAt)}>{timeAgo(c.createdAt)}</span>
                       </div>
                       <p className="text-sm text-gray-700 whitespace-pre-wrap">{c.content}</p>
                     </div>
