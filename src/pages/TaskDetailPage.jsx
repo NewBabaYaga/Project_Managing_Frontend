@@ -124,7 +124,7 @@ export default function TaskDetailPage() {
                 <div className="mt-4">
                   <p className="text-sm font-medium text-gray-700 mb-1">Reference Image</p>
                   <img
-                    src={`http://localhost:5000${task.imageUrl}`}
+                    src={`http://localhost:5040${task.imageUrl}`}
                     alt="Task reference"
                     className="max-h-64 rounded-lg border border-gray-200 object-contain"
                   />
