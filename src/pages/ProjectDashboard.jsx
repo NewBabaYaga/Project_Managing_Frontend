@@ -245,24 +245,6 @@ export default function ProjectDashboard() {
         {/* Tasks Tab */}
         {activeTab === 'tasks' && (
           <>
-          {tasks.length > 0 && (
-            <div className="flex flex-wrap gap-3 mb-4">
-              {[
-                { label: 'To Do', key: 'ToDo', color: 'bg-gray-100 text-gray-700' },
-                { label: 'In Progress', key: 'InProgress', color: 'bg-yellow-100 text-yellow-800' },
-                { label: 'Submitted', key: 'Submitted', color: 'bg-blue-100 text-blue-800' },
-                { label: 'Approved', key: 'Approved', color: 'bg-green-100 text-green-800' },
-              ].map(({ label, key, color }) => {
-                const count = tasks.filter(t => t.status === key).length;
-                return (
-                  <span key={key} className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${color}`}>
-                    {label}
-                    <span className="font-bold">{count}</span>
-                  </span>
-                );
-              })}
-            </div>
-          )}
           <KanbanBoard
             tasks={tasks}
             loading={false}
