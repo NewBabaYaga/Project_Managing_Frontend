@@ -7,6 +7,7 @@ import ProjectsPage from './pages/ProjectsPage';
 import ProjectDashboard from './pages/ProjectDashboard';
 import TaskDetailPage from './pages/TaskDetailPage';
 import UserProfilePage from './pages/UserProfilePage';
+import InvitePage from './pages/InvitePage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/invite/:token" element={<InvitePage />} />
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
