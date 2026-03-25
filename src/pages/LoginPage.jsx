@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { login as loginApi } from '../api/authApi';
@@ -12,6 +12,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/projects';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +22,7 @@ export default function LoginPage() {
       const res = await loginApi(form);
       const { token, ...user } = res.data;
       login(token, user);
-      navigate('/projects');
+      navigate(redirect);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed');
     } finally {
