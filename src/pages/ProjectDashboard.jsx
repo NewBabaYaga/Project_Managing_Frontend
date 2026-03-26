@@ -414,7 +414,10 @@ export default function ProjectDashboard() {
                       </td>
                       <td className="py-3 px-4 text-gray-500">{m.email}</td>
                       <td className="py-3 px-4">
-                        <Badge className={getRoleBadgeColor(m.role)}>{m.role}</Badge>
+                        {m.isPendingRoleAssignment
+                          ? <Badge className="bg-amber-100 text-amber-700">Pending role</Badge>
+                          : <Badge className={getRoleBadgeColor(m.role)}>{m.role}</Badge>
+                        }
                       </td>
                       {/* Group assignment (Admin only, Developers only) */}
                       {isAdmin && (
