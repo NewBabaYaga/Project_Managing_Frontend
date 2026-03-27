@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE } from '../../api/axiosInstance';
 import toast from 'react-hot-toast';
 import Modal from '../Shared/Modal';
 import { Textarea } from '../Shared/Input';
@@ -100,7 +101,7 @@ export default function ReviewModal({ isOpen, onClose, task, onReviewed }) {
                   )}
                   {selectedSubmission.fileUrl ? (
                     <a
-                      href={`http://localhost:5040${selectedSubmission.fileUrl}`}
+                      href={`${API_BASE}${selectedSubmission.fileUrl}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800"

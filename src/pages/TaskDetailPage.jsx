@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { API_BASE } from '../api/axiosInstance';
 import { useParams, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Navbar from '../components/Layout/Navbar';
@@ -124,7 +125,7 @@ export default function TaskDetailPage() {
                 <div className="mt-4">
                   <p className="text-sm font-medium text-gray-700 mb-1">Reference Image</p>
                   <img
-                    src={`http://localhost:5040${task.imageUrl}`}
+                    src={`${API_BASE}${task.imageUrl}`}
                     alt="Task reference"
                     className="max-h-64 rounded-lg border border-gray-200 object-contain"
                   />

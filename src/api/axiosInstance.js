@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+export const API_BASE = `http://${window.location.hostname}:5040`;
+
 const api = axios.create({
-  baseURL: 'http://localhost:5040',
+  baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
 });
 

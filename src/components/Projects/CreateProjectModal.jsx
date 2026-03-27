@@ -4,7 +4,7 @@ import Modal from '../Shared/Modal';
 import Input, { Textarea, Select } from '../Shared/Input';
 import Button from '../Shared/Button';
 import Badge from '../Shared/Badge';
-import { createProject, inviteMember } from '../../api/projectsApi';
+import { createProject, sendInvitation } from '../../api/projectsApi';
 import { PlusIcon, TrashIcon, UserPlusIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
@@ -50,7 +50,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
     let successCount = 0;
     for (const c of toInvite) {
       try {
-        await inviteMember(createdProject.id, { email: c.email.trim(), role: c.role });
+        await sendInvitation(createdProject.id, { email: c.email.trim(), role: c.role });
         successCount++;
       } catch (err) {
         toast.error(`Failed to invite ${c.email}: ${err.response?.data?.message || 'error'}`);

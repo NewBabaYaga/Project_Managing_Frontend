@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { API_BASE } from '../../api/axiosInstance';
 import Modal from '../Shared/Modal';
 import Badge from '../Shared/Badge';
 import Button from '../Shared/Button';
@@ -43,7 +44,7 @@ export default function TaskDetailModal({ isOpen, onClose, task, projectId }) {
           <div>
             <p className="text-sm font-medium text-gray-700 mb-1">Reference Image</p>
             <img
-              src={`http://localhost:5040${task.imageUrl}`}
+              src={`${API_BASE}${task.imageUrl}`}
               alt="Task reference"
               className="max-h-64 rounded-lg border border-gray-200 object-contain"
             />
