@@ -136,6 +136,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
                     value={c.role}
                     onChange={(e) => updateRow(i, 'role', e.target.value)}
                   >
+                    <option value="Admin">Admin</option>
                     <option value="Manager">Manager</option>
                     <option value="Developer">Developer</option>
                   </Select>

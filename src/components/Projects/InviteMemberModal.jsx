@@ -94,6 +94,7 @@ export default function InviteMemberModal({ isOpen, onClose, projectId, onInvite
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value })}
           >
+            <option value="Admin">Admin</option>
             <option value="Manager">Manager</option>
             <option value="Developer">Developer</option>
           </Select>
