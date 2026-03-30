@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Navbar from '../components/Layout/Navbar';
 import ProjectCard from '../components/Projects/ProjectCard';
@@ -13,8 +14,9 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [search, setSearch] = useState('');
+  const location = useLocation();
 
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
       const res = await getProjects();
       setProjects(res.data);
@@ -23,9 +25,9 @@ export default function ProjectsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchProjects(); }, []);
+  useEffect(() => { fetchProjects(); }, [fetchProjects, location.key]);
 
   const handleProjectCreated = (project) => {
     setProjects(prev => [project, ...prev]);
