@@ -5,7 +5,7 @@ import { getInvitationByToken, acceptInvitation, declineInvitation } from '../ap
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/Shared/Button';
 import LoadingSpinner from '../components/Shared/LoadingSpinner';
-import { FolderIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { FolderIcon, CheckCircleIcon, XCircleIcon, UsersIcon } from '@heroicons/react/24/outline';
 
 export default function InvitePage() {
   const { token } = useParams();
@@ -98,9 +98,18 @@ export default function InvitePage() {
             <div>
               <p className="text-sm text-gray-500 mb-1">You've been invited to join</p>
               <p className="text-xl font-bold text-gray-900">{invitation.projectName}</p>
-              <p className="text-sm text-gray-500 mt-1">
-                Invited by <span className="font-medium text-gray-700">{invitation.invitedByUsername}</span>
-              </p>
+              {invitation.projectDescription && (
+                <p className="text-sm text-gray-500 mt-1 leading-relaxed">{invitation.projectDescription}</p>
+              )}
+              <div className="flex items-center gap-4 mt-3">
+                <span className="flex items-center gap-1 text-xs text-gray-500">
+                  <UsersIcon className="w-3.5 h-3.5" />
+                  {invitation.projectMemberCount} member{invitation.projectMemberCount !== 1 ? 's' : ''}
+                </span>
+                <span className="text-xs text-gray-500">
+                  Invited by <span className="font-medium text-gray-700">{invitation.invitedByUsername}</span>
+                </span>
+              </div>
             </div>
 
             {invitation.role && (
