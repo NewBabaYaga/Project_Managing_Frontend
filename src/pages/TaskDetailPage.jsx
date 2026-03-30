@@ -52,9 +52,10 @@ export default function TaskDetailPage() {
     if (!commentText.trim()) return;
     setSubmittingComment(true);
     try {
-      const res = await addTaskComment(projectId, taskId, { content: commentText });
-      setComments(prev => [...prev, res.data]);
+      await addTaskComment(projectId, taskId, { content: commentText });
       setCommentText('');
+      const commentsRes = await getTaskComments(projectId, taskId);
+      setComments(commentsRes.data);
     } catch (err) {
       toast.error(getErrorMessage(err, 'Failed to post comment'));
     } finally {
