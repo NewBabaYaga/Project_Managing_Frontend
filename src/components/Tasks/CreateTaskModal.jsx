@@ -7,6 +7,9 @@ import { createTask } from '../../api/tasksApi';
 import { getErrorMessage } from '../../utils/errorUtils';
 import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
+const MAX_IMAGE_MB = 10;
+const MAX_IMAGE_BYTES = MAX_IMAGE_MB * 1024 * 1024;
+
 export default function CreateTaskModal({ isOpen, onClose, projectId, members, userRole, onCreated }) {
   const isManager = userRole === 'Manager';
   const isAdmin = userRole === 'Admin';
@@ -38,6 +41,11 @@ export default function CreateTaskModal({ isOpen, onClose, projectId, members, u
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error(`Image is too large. Maximum allowed size is ${MAX_IMAGE_MB} MB.`);
+      e.target.value = '';
+      return;
+    }
     setImage(file);
     setImagePreview(URL.createObjectURL(file));
   };
@@ -120,11 +128,14 @@ export default function CreateTaskModal({ isOpen, onClose, projectId, members, u
               </button>
             </div>
           ) : (
-            <label className="flex items-center gap-2 w-fit px-3 py-2 border border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition text-sm text-gray-500">
-              <PhotoIcon className="w-5 h-5 text-gray-400" />
-              Attach image
-              <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
-            </label>
+            <div>
+              <label className="flex items-center gap-2 w-fit px-3 py-2 border border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition text-sm text-gray-500">
+                <PhotoIcon className="w-5 h-5 text-gray-400" />
+                Attach image
+                <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+              </label>
+              <p className="text-xs text-gray-400 mt-1">Max {MAX_IMAGE_MB} MB</p>
+            </div>
           )}
         </div>
 
