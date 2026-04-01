@@ -17,7 +17,7 @@ export default function TaskCard({
   const isDevRole = isDeveloper(userRole);
   const isManager = userRole === 'Manager';
 
-  const canAccept = isDevRole && task.status === 'ToDo' && (() => {
+  const canAccept = (isDevRole || isManager) && task.status === 'ToDo' && (() => {
     if (task.assignmentMode === 'Direct') return false;
     if (task.assignmentMode === 'Invited') return task.eligibleUserIds?.includes(currentUserId);
     return task.assignedToId == null || isAssignedToMe;
