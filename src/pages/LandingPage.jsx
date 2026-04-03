@@ -178,7 +178,10 @@ export default function LandingPage() {
       {/* Navbar */}
       <header className="border-b border-gray-100 sticky top-0 bg-white/90 backdrop-blur z-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
-          <span className="font-bold text-indigo-600 text-lg">TaskFlow</span>
+          <div className="flex items-center gap-2">
+              <img src="/logo_transparent.png" alt="TaskFlow" className="h-8 w-8 object-contain" />
+              <span className="font-bold text-indigo-600 text-lg">TaskFlow</span>
+            </div>
           <div className="flex items-center gap-3">
             {token ? (
               <Link
@@ -188,17 +191,9 @@ export default function LandingPage() {
                 Go to App <ArrowRightIcon className="w-4 h-4" />
               </Link>
             ) : (
-              <>
-                <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900 font-medium px-3 py-1.5">
-                  Sign in
-                </Link>
-                <Link
-                  to="/register"
-                  className="bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
-                >
-                  Get started
-                </Link>
-              </>
+              <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900 font-medium px-3 py-1.5">
+                Sign in
+              </Link>
             )}
           </div>
         </div>
