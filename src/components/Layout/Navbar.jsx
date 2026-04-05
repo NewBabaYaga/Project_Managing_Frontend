@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { ArrowRightOnRectangleIcon, FolderIcon, BellIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowRightOnRectangleIcon, BellIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Button from '../Shared/Button';
 import Avatar from '../Shared/Avatar';
 import { getMyInvitations, acceptInvitation, declineInvitation } from '../../api/invitationsApi';
@@ -57,7 +57,7 @@ export default function Navbar() {
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link to="/projects" className="flex items-center gap-2 font-bold text-indigo-600 text-lg hover:text-indigo-700">
-            <FolderIcon className="w-6 h-6" />
+            <img src="/logo_transparent.png" alt="TaskFlow" className="h-8 w-8 object-contain" />
             TaskFlow
           </Link>
 
