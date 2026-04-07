@@ -174,6 +174,49 @@ export default function ProjectDashboard() {
 
   const managers = members.filter(m => m.role === 'Manager');
 
+  // Contextual header stats — change based on active tab
+  const headerStats = (() => {
+    if (activeTab === 'tasks') {
+      const counts = tasks.reduce((acc, t) => { acc[t.status] = (acc[t.status] || 0) + 1; return acc; }, {});
+      return [
+        { label: 'To Do',       value: counts.ToDo || 0,       cls: 'bg-gray-100 text-gray-700' },
+        { label: 'In Progress', value: counts.InProgress || 0, cls: 'bg-blue-50 text-blue-700' },
+        { label: 'Submitted',   value: counts.Submitted || 0,  cls: 'bg-amber-50 text-amber-700' },
+        { label: 'Approved',    value: counts.Approved || 0,   cls: 'bg-green-50 text-green-700' },
+      ];
+    }
+    if (activeTab === 'assignments') {
+      const vis = isAdmin
+        ? tasks
+        : tasks.filter(t =>
+            t.assignedToId === user?.userId ||
+            myGroupMembers.some(m => m.userId === t.assignedToId) ||
+            t.assignedToId == null
+          );
+      return [
+        { label: 'Unassigned', value: vis.filter(t => !t.assignedToId).length, cls: 'bg-gray-100 text-gray-700' },
+        { label: 'Submitted',  value: vis.filter(t => t.status === 'Submitted').length, cls: 'bg-amber-50 text-amber-700' },
+        { label: 'Overdue',    value: vis.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'Approved').length, cls: 'bg-red-50 text-red-700' },
+      ];
+    }
+    if (activeTab === 'members') {
+      const roleCounts = members.reduce((acc, m) => { acc[m.role] = (acc[m.role] || 0) + 1; return acc; }, {});
+      return [
+        { label: 'Admin',     value: roleCounts.Admin || 0,     cls: 'bg-purple-50 text-purple-700' },
+        { label: 'Manager',   value: roleCounts.Manager || 0,   cls: 'bg-indigo-50 text-indigo-700' },
+        { label: 'Developer', value: roleCounts.Developer || 0, cls: 'bg-emerald-50 text-emerald-700' },
+      ];
+    }
+    if (activeTab === 'stats' && stats) {
+      return [
+        { label: 'Approval',  value: `${stats.approvalRate}%`, cls: 'bg-indigo-50 text-indigo-700' },
+        { label: 'Pts total', value: stats.totalPoints,        cls: 'bg-purple-50 text-purple-700' },
+        { label: 'Pending',   value: stats.pendingTasks,       cls: 'bg-yellow-50 text-yellow-700' },
+      ];
+    }
+    return [];
+  })();
+
   const navItems = [
     { key: 'tasks',       label: 'Tasks',          icon: ClipboardDocumentListIcon, count: tasks.length },
     ...(isAdminOrManager ? [{ key: 'assignments', label: 'Assignments', icon: TableCellsIcon }] : []),
@@ -322,20 +365,16 @@ export default function ProjectDashboard() {
                 )}
               </div>
             </div>
-            <div className="flex gap-2 flex-shrink-0">
-              {canInviteMembers(userRole) && (
-                <Button variant="outline" size="sm" onClick={() => setShowInvite(true)}>
-                  <UserPlusIcon className="w-4 h-4" />
-                  <span className="hidden sm:inline">Invite</span>
-                </Button>
-              )}
-              {canCreateTask(userRole) && (
-                <Button size="sm" onClick={() => setShowCreateTask(true)}>
-                  <PlusIcon className="w-4 h-4" />
-                  <span className="hidden sm:inline">Add Task</span>
-                </Button>
-              )}
-            </div>
+            {headerStats.length > 0 && (
+              <div className="hidden sm:flex items-center gap-1.5 flex-shrink-0 flex-wrap justify-end">
+                {headerStats.map(s => (
+                  <span key={s.label} className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${s.cls}`}>
+                    <span className="font-bold">{s.value}</span>
+                    <span className="opacity-75">{s.label}</span>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Active tab label (mobile breadcrumb) */}
