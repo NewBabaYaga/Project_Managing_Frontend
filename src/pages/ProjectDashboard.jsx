@@ -52,6 +52,8 @@ export default function ProjectDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('tasks');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [assignFilter, setAssignFilter] = useState({ status: '', difficulty: '', assignee: '' });
+  const [assignSort, setAssignSort] = useState({ by: 'status', dir: 'asc' });
 
   // Modals
   const [showCreateTask, setShowCreateTask] = useState(false);
@@ -433,18 +435,106 @@ export default function ProjectDashboard() {
               : [...myGroupMembers, myMembership].filter(Boolean);
 
             const statusOrder = { ToDo: 0, InProgress: 1, Submitted: 2, Approved: 3 };
-            const sorted = [...visibleTasks].sort((a, b) =>
-              (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9)
-            );
+            const diffOrder = { Easy: 0, Medium: 1, Hard: 2 };
+
+            // Apply filters
+            let filtered = visibleTasks;
+            if (assignFilter.status) filtered = filtered.filter(t => t.status === assignFilter.status);
+            if (assignFilter.difficulty) filtered = filtered.filter(t => t.difficulty === assignFilter.difficulty);
+            if (assignFilter.assignee === '__none__') filtered = filtered.filter(t => !t.assignedToId);
+            else if (assignFilter.assignee) filtered = filtered.filter(t => t.assignedToId === assignFilter.assignee);
+
+            // Apply sort
+            const sorted = [...filtered].sort((a, b) => {
+              let cmp = 0;
+              if (assignSort.by === 'status') cmp = (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9);
+              else if (assignSort.by === 'difficulty') cmp = (diffOrder[a.difficulty] ?? 9) - (diffOrder[b.difficulty] ?? 9);
+              else if (assignSort.by === 'dueDate') {
+                const da = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+                const db = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+                cmp = da - db;
+              }
+              else if (assignSort.by === 'title') cmp = a.title.localeCompare(b.title);
+              return assignSort.dir === 'asc' ? cmp : -cmp;
+            });
+
+            const hasActiveFilter = assignFilter.status || assignFilter.difficulty || assignFilter.assignee;
 
             return (
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                {/* Header row */}
                 <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
                   <TableCellsIcon className="w-4 h-4 text-gray-500" />
                   <p className="text-sm font-semibold text-gray-700">
-                    {sorted.length} task{sorted.length !== 1 ? 's' : ''}
+                    {hasActiveFilter
+                      ? `${sorted.length} / ${visibleTasks.length} task${visibleTasks.length !== 1 ? 's' : ''}`
+                      : `${sorted.length} task${sorted.length !== 1 ? 's' : ''}`}
                     {isManagerRole ? ' (your group)' : ''}
                   </p>
+                </div>
+
+                {/* Filter & Sort bar */}
+                <div className="px-4 py-2.5 border-b border-gray-100 flex flex-wrap items-center gap-2 bg-white">
+                  <select
+                    value={assignFilter.status}
+                    onChange={e => setAssignFilter(f => ({ ...f, status: e.target.value }))}
+                    className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  >
+                    <option value="">All statuses</option>
+                    {['ToDo', 'InProgress', 'Submitted', 'Approved'].map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={assignFilter.difficulty}
+                    onChange={e => setAssignFilter(f => ({ ...f, difficulty: e.target.value }))}
+                    className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  >
+                    <option value="">All difficulties</option>
+                    {['Easy', 'Medium', 'Hard'].map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={assignFilter.assignee}
+                    onChange={e => setAssignFilter(f => ({ ...f, assignee: e.target.value }))}
+                    className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  >
+                    <option value="">All members</option>
+                    <option value="__none__">Unassigned</option>
+                    {assignableOptions.map(m => (
+                      <option key={m.userId} value={m.userId}>
+                        {m.username}{m.userId === user?.userId ? ' (you)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {hasActiveFilter && (
+                    <button
+                      onClick={() => setAssignFilter({ status: '', difficulty: '', assignee: '' })}
+                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium px-1"
+                    >
+                      Clear filters
+                    </button>
+                  )}
+                  <div className="ml-auto flex items-center gap-1.5">
+                    <span className="text-xs text-gray-400">Sort:</span>
+                    <select
+                      value={assignSort.by}
+                      onChange={e => setAssignSort(s => ({ ...s, by: e.target.value }))}
+                      className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    >
+                      <option value="status">Status</option>
+                      <option value="difficulty">Difficulty</option>
+                      <option value="dueDate">Due Date</option>
+                      <option value="title">Title</option>
+                    </select>
+                    <button
+                      onClick={() => setAssignSort(s => ({ ...s, dir: s.dir === 'asc' ? 'desc' : 'asc' }))}
+                      className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white hover:bg-gray-50 transition font-medium text-gray-600 min-w-[52px]"
+                    >
+                      {assignSort.dir === 'asc' ? '↑ Asc' : '↓ Desc'}
+                    </button>
+                  </div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
