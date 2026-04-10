@@ -176,17 +176,8 @@ export default function ProjectDashboard() {
 
   const managers = members.filter(m => m.role === 'Manager');
 
-  // Contextual header stats — change based on active tab
+  // Contextual header stats — only for tabs where the content doesn't already show these numbers
   const headerStats = (() => {
-    if (activeTab === 'tasks') {
-      const counts = tasks.reduce((acc, t) => { acc[t.status] = (acc[t.status] || 0) + 1; return acc; }, {});
-      return [
-        { label: 'To Do',       value: counts.ToDo || 0,       cls: 'bg-gray-100 text-gray-700' },
-        { label: 'In Progress', value: counts.InProgress || 0, cls: 'bg-blue-50 text-blue-700' },
-        { label: 'Submitted',   value: counts.Submitted || 0,  cls: 'bg-amber-50 text-amber-700' },
-        { label: 'Approved',    value: counts.Approved || 0,   cls: 'bg-green-50 text-green-700' },
-      ];
-    }
     if (activeTab === 'assignments') {
       const vis = isAdmin
         ? tasks
@@ -207,13 +198,6 @@ export default function ProjectDashboard() {
         { label: 'Admin',     value: roleCounts.Admin || 0,     cls: 'bg-purple-50 text-purple-700' },
         { label: 'Manager',   value: roleCounts.Manager || 0,   cls: 'bg-indigo-50 text-indigo-700' },
         { label: 'Developer', value: roleCounts.Developer || 0, cls: 'bg-emerald-50 text-emerald-700' },
-      ];
-    }
-    if (activeTab === 'stats' && stats) {
-      return [
-        { label: 'Approval',  value: `${stats.approvalRate}%`, cls: 'bg-indigo-50 text-indigo-700' },
-        { label: 'Pts total', value: stats.totalPoints,        cls: 'bg-purple-50 text-purple-700' },
-        { label: 'Pending',   value: stats.pendingTasks,       cls: 'bg-yellow-50 text-yellow-700' },
       ];
     }
     return [];
@@ -347,28 +331,16 @@ export default function ProjectDashboard() {
 
         {/* Main content */}
         <main className="flex-1 min-w-0 px-4 sm:px-6 py-6">
-          {/* Page header */}
-          <div className="flex items-start justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3 min-w-0">
-              {/* Mobile menu toggle */}
-              <button
-                className="lg:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition flex-shrink-0"
-                onClick={() => setSidebarOpen(true)}
-              >
-                <Bars3Icon className="w-5 h-5" />
-              </button>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl font-bold text-gray-900 truncate">{project?.name}</h1>
-                  <Badge className={getRoleBadgeColor(userRole)}>{userRole}</Badge>
-                </div>
-                {project?.description && (
-                  <p className="text-sm text-gray-500 mt-0.5 line-clamp-1">{project.description}</p>
-                )}
-              </div>
-            </div>
+          {/* Page header — hamburger on mobile + tab stats for assignments/members */}
+          <div className={`flex items-center gap-3 mb-4${headerStats.length === 0 ? ' lg:hidden' : ''}`}>
+            <button
+              className="lg:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition flex-shrink-0"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Bars3Icon className="w-5 h-5" />
+            </button>
             {headerStats.length > 0 && (
-              <div className="hidden sm:flex items-center gap-1.5 flex-shrink-0 flex-wrap justify-end">
+              <div className="flex items-center gap-1.5 flex-wrap ml-auto">
                 {headerStats.map(s => (
                   <span key={s.label} className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${s.cls}`}>
                     <span className="font-bold">{s.value}</span>
