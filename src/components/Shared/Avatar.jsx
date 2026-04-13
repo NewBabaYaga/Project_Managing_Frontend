@@ -9,9 +9,24 @@ function colorFor(name) {
   return COLORS[Math.abs(hash) % COLORS.length];
 }
 
-export default function Avatar({ name = '', size = 'md', className = '' }) {
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5162';
+
+export default function Avatar({ name = '', avatarUrl = null, size = 'md', className = '' }) {
   const initials = name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
   const sizeClass = size === 'sm' ? 'w-6 h-6 text-xs' : size === 'lg' ? 'w-10 h-10 text-base' : 'w-8 h-8 text-sm';
+
+  if (avatarUrl) {
+    const fullUrl = avatarUrl.startsWith('http') ? avatarUrl : `${API_BASE}${avatarUrl}`;
+    return (
+      <img
+        src={fullUrl}
+        alt={name}
+        className={`${sizeClass} rounded-full object-cover flex-shrink-0 ${className}`}
+        onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
+      />
+    );
+  }
+
   return (
     <div className={`${sizeClass} ${colorFor(name)} rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${className}`}>
       {initials || '?'}
