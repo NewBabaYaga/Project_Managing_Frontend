@@ -41,6 +41,18 @@ export function AuthProvider({ children }) {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
+  const updateUser = (patch) => {
+    setUser(prev => {
+      const updated = { ...prev, ...patch };
+      localStorage.setItem('user', JSON.stringify(updated));
+      if (patch.token) {
+        setToken(patch.token);
+        localStorage.setItem('token', patch.token);
+      }
+      return updated;
+    });
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -52,7 +64,7 @@ export function AuthProvider({ children }) {
   const setProjectRole = (role) => setProjectRoleState(role);
 
   return (
-    <AuthContext.Provider value={{ user, token, projectRole, isLoading, login, logout, setProjectRole }}>
+    <AuthContext.Provider value={{ user, token, projectRole, isLoading, login, logout, setProjectRole, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
