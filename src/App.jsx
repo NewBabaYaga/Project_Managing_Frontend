@@ -7,6 +7,7 @@ import ProjectsPage from './pages/ProjectsPage';
 import ProjectDashboard from './pages/ProjectDashboard';
 import TaskDetailPage from './pages/TaskDetailPage';
 import UserProfilePage from './pages/UserProfilePage';
+import PublicProfilePage from './pages/PublicProfilePage';
 import InvitePage from './pages/InvitePage';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/projects/:id/dashboard" element={<ProjectDashboard />} />
           <Route path="/projects/:projectId/tasks/:taskId" element={<TaskDetailPage />} />
           <Route path="/profile" element={<UserProfilePage />} />
+          <Route path="/users/:userId" element={<PublicProfilePage />} />
         </Route>
 
         {/* Catch-all */}
