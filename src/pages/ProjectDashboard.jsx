@@ -160,6 +160,33 @@ export default function ProjectDashboard() {
     </div>
   );
 
+  // Pending role — show waiting screen, poll until role is assigned
+  if (myMembership?.isPendingRoleAssignment) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="max-w-xl mx-auto px-4 pt-20 pb-8 text-center">
+          <div className="bg-white rounded-2xl border border-amber-200 p-8 shadow-sm">
+            <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <ClockIcon className="w-7 h-7 text-amber-600" />
+            </div>
+            <h2 className="text-lg font-bold text-gray-900 mb-2">{project?.name}</h2>
+            <p className="text-sm text-gray-600 mb-1">{project?.description}</p>
+            <p className="text-sm text-amber-700 font-medium mt-4">
+              You've joined this project but your role hasn't been assigned yet.
+            </p>
+            <p className="text-xs text-gray-400 mt-2">
+              A project Admin will assign your role shortly. This page refreshes automatically.
+            </p>
+            <Link to="/projects" className="inline-block mt-6 text-sm text-indigo-600 hover:underline">
+              ← Back to projects
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const isAdmin = userRole === 'Admin';
   const isAdminOrManager = canCreateTask(userRole);
   const isManagerRole = userRole === 'Manager';
@@ -626,7 +653,13 @@ export default function ProjectDashboard() {
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-2">
                             <Avatar name={m.username} size="sm" />
-                            <span className="font-medium text-gray-900">{m.username}</span>
+                            {m.userId !== user?.userId ? (
+                              <Link to={`/users/${m.userId}`} className="font-medium text-gray-900 hover:text-indigo-600 transition">
+                                {m.username}
+                              </Link>
+                            ) : (
+                              <span className="font-medium text-gray-900">{m.username}</span>
+                            )}
                             {m.userId === user?.userId && (
                               <Badge className="bg-indigo-100 text-indigo-700">You</Badge>
                             )}
