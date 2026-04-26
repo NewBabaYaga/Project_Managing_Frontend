@@ -3,28 +3,29 @@ import toast from 'react-hot-toast';
 import Modal from '../Shared/Modal';
 import Input, { Textarea, Select } from '../Shared/Input';
 import Button from '../Shared/Button';
-import Badge from '../Shared/Badge';
-import { createProject, sendInvitation } from '../../api/projectsApi';
-import { PlusIcon, TrashIcon, UserPlusIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { createProject, sendInvitation, generateInviteLink } from '../../api/projectsApi';
+import { PlusIcon, TrashIcon, UserPlusIcon, CheckCircleIcon, LinkIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 
 export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
-  const [step, setStep] = useState(1); // 1 = project details, 2 = invite contributors
+  const [step, setStep] = useState(1); // 1 = details, 2 = email invites, 3 = invite link
   const [form, setForm] = useState({ name: '', description: '' });
   const [createdProject, setCreatedProject] = useState(null);
   const [contributors, setContributors] = useState([{ email: '', role: 'Developer' }]);
   const [loading, setLoading] = useState(false);
   const [inviting, setInviting] = useState(false);
+  const [inviteLink, setInviteLink] = useState(null);
+  const [generatingLink, setGeneratingLink] = useState(false);
 
   const reset = () => {
     setStep(1);
     setForm({ name: '', description: '' });
     setCreatedProject(null);
     setContributors([{ email: '', role: 'Developer' }]);
+    setInviteLink(null);
   };
 
   const handleClose = () => { reset(); onClose(); };
 
-  // Step 1: Create the project
   const handleCreateProject = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) return;
@@ -41,10 +42,9 @@ export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
     }
   };
 
-  // Step 2: Invite contributors (optional)
   const handleInvite = async () => {
     const toInvite = contributors.filter(c => c.email.trim());
-    if (toInvite.length === 0) { handleClose(); return; }
+    if (toInvite.length === 0) { setStep(3); return; }
 
     setInviting(true);
     let successCount = 0;
@@ -58,7 +58,27 @@ export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
     }
     if (successCount > 0) toast.success(`Invited ${successCount} contributor${successCount > 1 ? 's' : ''}!`);
     setInviting(false);
-    handleClose();
+    setStep(3);
+  };
+
+  const handleGenerateLink = async () => {
+    setGeneratingLink(true);
+    try {
+      const frontendBase = window.location.origin;
+      const res = await generateInviteLink(createdProject.id);
+      setInviteLink(res.data.link);
+    } catch {
+      toast.error('Failed to generate invite link');
+    } finally {
+      setGeneratingLink(false);
+    }
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(inviteLink).then(
+      () => toast.success('Link copied!'),
+      () => toast.error('Failed to copy')
+    );
   };
 
   const addRow = () => setContributors([...contributors, { email: '', role: 'Developer' }]);
@@ -66,20 +86,22 @@ export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
   const updateRow = (i, field, value) =>
     setContributors(contributors.map((c, idx) => idx === i ? { ...c, [field]: value } : c));
 
+  const stepLabels = ['Project Details', 'Invite by Email', 'Invite Link'];
+
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={step === 1 ? 'Create New Project' : 'Invite Contributors'}>
+    <Modal isOpen={isOpen} onClose={handleClose} title={stepLabels[step - 1]}>
       {/* Step indicator */}
-      <div className="flex items-center gap-2 mb-6">
-        {[1, 2].map(s => (
-          <div key={s} className="flex items-center gap-2">
+      <div className="flex items-center gap-1 mb-6">
+        {[1, 2, 3].map((s, idx) => (
+          <div key={s} className="flex items-center gap-1">
             <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold transition
               ${step === s ? 'bg-indigo-600 text-white' : step > s ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'}`}>
               {step > s ? <CheckCircleIcon className="w-4 h-4" /> : s}
             </div>
-            <span className={`text-sm ${step === s ? 'font-medium text-gray-800' : 'text-gray-400'}`}>
-              {s === 1 ? 'Project Details' : 'Invite Contributors'}
+            <span className={`text-xs ${step === s ? 'font-medium text-gray-800' : 'text-gray-400'}`}>
+              {stepLabels[idx]}
             </span>
-            {s < 2 && <div className="w-8 h-px bg-gray-300 ml-1" />}
+            {s < 3 && <div className="w-6 h-px bg-gray-300 mx-1" />}
           </div>
         ))}
       </div>
@@ -104,7 +126,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="outline" onClick={handleClose} type="button">Cancel</Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Next: Invite Contributors →'}
+              {loading ? 'Creating...' : 'Next: Invite by Email →'}
             </Button>
           </div>
         </form>
@@ -115,7 +137,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
         <div className="flex flex-col gap-4">
           <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-sm text-green-800 flex items-center gap-2">
             <CheckCircleIcon className="w-4 h-4 flex-shrink-0" />
-            <span>Project <strong>{createdProject?.name}</strong> created! Now invite your team (optional).</span>
+            <span>Project <strong>{createdProject?.name}</strong> created! Invite by email (optional).</span>
           </div>
 
           <div className="flex flex-col gap-3">
@@ -158,12 +180,59 @@ export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
           </button>
 
           <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
-            <Button variant="outline" onClick={handleClose} disabled={inviting}>
-              Skip for now
+            <Button variant="outline" onClick={() => setStep(3)} disabled={inviting}>
+              Skip
             </Button>
             <Button onClick={handleInvite} disabled={inviting}>
               <UserPlusIcon className="w-4 h-4" />
-              {inviting ? 'Inviting...' : 'Send Invites'}
+              {inviting ? 'Inviting...' : 'Send Invites & Next →'}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3 */}
+      {step === 3 && (
+        <div className="flex flex-col gap-5">
+          <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-sm text-green-800 flex items-center gap-2">
+            <CheckCircleIcon className="w-4 h-4 flex-shrink-0" />
+            <span>Almost done! Share an invite link so anyone can join.</span>
+          </div>
+
+          <div className="bg-gray-50 rounded-xl border border-gray-200 p-5 flex flex-col items-center gap-4 text-center">
+            <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+              <LinkIcon className="w-6 h-6 text-indigo-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-900">Generate a shareable invite link</p>
+              <p className="text-xs text-gray-500 mt-1">Anyone with the link can join. Their role will be assigned by an Admin.</p>
+            </div>
+
+            {!inviteLink ? (
+              <Button onClick={handleGenerateLink} disabled={generatingLink}>
+                <LinkIcon className="w-4 h-4" />
+                {generatingLink ? 'Generating…' : 'Generate Invite Link'}
+              </Button>
+            ) : (
+              <div className="w-full">
+                <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-3 py-2">
+                  <span className="flex-1 text-xs text-gray-600 truncate">{inviteLink}</span>
+                  <button
+                    onClick={handleCopyLink}
+                    className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-medium flex-shrink-0"
+                  >
+                    <ClipboardDocumentIcon className="w-4 h-4" />
+                    Copy
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">Link expires in 7 days. You can generate more from project settings.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end pt-2 border-t border-gray-100">
+            <Button onClick={handleClose}>
+              Done
             </Button>
           </div>
         </div>
