@@ -17,3 +17,4 @@ export const uploadAvatar = (file) => {
 export const updateProfile = (data) => api.patch('/api/users/me/profile', data);
 export const deleteAccount = () => api.delete('/api/users/me');
 export const searchUsers = (q) => api.get('/api/users/search', { params: { q } });
+export const getAdminOnlyProjects = () => api.get('/api/users/me/admin-only-projects');
