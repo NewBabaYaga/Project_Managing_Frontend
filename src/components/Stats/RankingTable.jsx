@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import Badge from '../Shared/Badge';
 import { TrophyIcon } from '@heroicons/react/24/outline';
 
@@ -41,7 +42,13 @@ function SingleRankingTable({ entries, currentUserId, showGroupPoints = false })
                 )}
               </td>
               <td className="py-2 px-3">
-                <span className="font-medium text-gray-900">{entry.username}</span>
+                {entry.userId === currentUserId ? (
+                  <span className="font-medium text-gray-900">{entry.username}</span>
+                ) : (
+                  <Link to={`/users/${entry.userId}`} className="font-medium text-indigo-600 hover:text-indigo-800 hover:underline">
+                    {entry.username}
+                  </Link>
+                )}
                 {entry.userId === currentUserId && (
                   <Badge className="ml-2 bg-indigo-100 text-indigo-700">You</Badge>
                 )}
