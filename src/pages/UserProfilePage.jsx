@@ -5,8 +5,9 @@ import Navbar from '../components/Layout/Navbar';
 import LoadingSpinner from '../components/Shared/LoadingSpinner';
 import Badge from '../components/Shared/Badge';
 import Avatar from '../components/Shared/Avatar';
-import { getMyStats, uploadAvatar, updateProfile, deleteAccount } from '../api/usersApi';
+import { getMyStats, uploadAvatar, updateProfile, deleteAccount, getAdminOnlyProjects } from '../api/usersApi';
 import { getNotificationPreferences, updateNotificationPreferences } from '../api/notificationsApi';
+import { getMembers, updateMemberRole } from '../api/projectsApi';
 import { useAuth } from '../context/AuthContext';
 import { getRoleBadgeColor } from '../utils/roleUtils';
 import { BuildingOffice2Icon, CameraIcon, PencilIcon, BellIcon, TrashIcon } from '@heroicons/react/24/outline';
@@ -56,6 +57,11 @@ export default function UserProfilePage() {
   // Delete
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [adminOnlyProjects, setAdminOnlyProjects] = useState(null);
+  const [projectMembers, setProjectMembers] = useState({});
+  const [adminTransfers, setAdminTransfers] = useState({});
+  const [checkingAdmin, setCheckingAdmin] = useState(false);
+  const [transferring, setTransferring] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -120,6 +126,51 @@ export default function UserProfilePage() {
     }
   };
 
+  const handleDeleteClick = async () => {
+    setCheckingAdmin(true);
+    try {
+      const res = await getAdminOnlyProjects();
+      const projects = res.data;
+      if (projects.length === 0) {
+        setAdminOnlyProjects([]);
+        setDeleteConfirm(true);
+      } else {
+        const membersMap = {};
+        await Promise.all(projects.map(async (p) => {
+          const mRes = await getMembers(p.id);
+          membersMap[p.id] = mRes.data.filter(m => m.userId !== user?.userId);
+        }));
+        setProjectMembers(membersMap);
+        setAdminOnlyProjects(projects);
+      }
+    } catch {
+      toast.error('Failed to check admin status');
+    } finally {
+      setCheckingAdmin(false);
+    }
+  };
+
+  const handleTransferAndContinue = async () => {
+    for (const p of adminOnlyProjects) {
+      if (!adminTransfers[p.id]) {
+        toast.error(`Please select a new admin for "${p.name}"`);
+        return;
+      }
+    }
+    setTransferring(true);
+    try {
+      await Promise.all(adminOnlyProjects.map(p =>
+        updateMemberRole(p.id, adminTransfers[p.id], 'Admin')
+      ));
+      setAdminOnlyProjects([]);
+      setDeleteConfirm(true);
+    } catch {
+      toast.error('Failed to transfer admin rights');
+    } finally {
+      setTransferring(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     setDeleting(true);
     try {
@@ -127,8 +178,8 @@ export default function UserProfilePage() {
       toast.success('Account deleted');
       logout();
       navigate('/');
-    } catch {
-      toast.error('Failed to delete account');
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to delete account');
       setDeleting(false);
     }
   };
@@ -285,12 +336,52 @@ export default function UserProfilePage() {
             Deleting your account is permanent. You will be removed from all projects and cannot log in again.
             Your contributions will remain visible to project admins.
           </p>
-          {!deleteConfirm ? (
+
+          {adminOnlyProjects && adminOnlyProjects.length > 0 ? (
+            <div>
+              <p className="text-sm text-amber-700 font-medium mb-3">
+                You are the only admin in the following projects. Please select a new admin for each before proceeding.
+              </p>
+              <div className="flex flex-col gap-3 mb-4">
+                {adminOnlyProjects.map(p => (
+                  <div key={p.id} className="border border-gray-200 rounded-lg p-3">
+                    <p className="text-sm font-medium text-gray-900 mb-2">{p.name}</p>
+                    <select
+                      className="w-full text-sm border border-gray-300 rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-400 outline-none"
+                      value={adminTransfers[p.id] || ''}
+                      onChange={e => setAdminTransfers(t => ({ ...t, [p.id]: e.target.value }))}
+                    >
+                      <option value="">Select new admin…</option>
+                      {(projectMembers[p.id] || []).map(m => (
+                        <option key={m.userId} value={m.userId}>{m.username} ({m.role})</option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-3 flex-wrap">
+                <button
+                  onClick={handleTransferAndContinue}
+                  disabled={transferring}
+                  className="text-sm bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 disabled:opacity-50"
+                >
+                  {transferring ? 'Transferring…' : 'Transfer & Continue'}
+                </button>
+                <button
+                  onClick={() => { setAdminOnlyProjects(null); setAdminTransfers({}); }}
+                  className="text-sm text-gray-600 px-3 py-2 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : !deleteConfirm ? (
             <button
-              onClick={() => setDeleteConfirm(true)}
-              className="text-sm text-red-600 border border-red-300 px-4 py-2 rounded-lg hover:bg-red-50 transition"
+              onClick={handleDeleteClick}
+              disabled={checkingAdmin}
+              className="text-sm text-red-600 border border-red-300 px-4 py-2 rounded-lg hover:bg-red-50 transition disabled:opacity-50"
             >
-              Delete account
+              {checkingAdmin ? 'Checking…' : 'Delete account'}
             </button>
           ) : (
             <div className="flex items-center gap-3 flex-wrap">
