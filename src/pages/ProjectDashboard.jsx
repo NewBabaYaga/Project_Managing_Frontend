@@ -15,7 +15,7 @@ import Button from '../components/Shared/Button';
 import Badge from '../components/Shared/Badge';
 import Avatar from '../components/Shared/Avatar';
 import LoadingSpinner from '../components/Shared/LoadingSpinner';
-import { getProject, getMembers, removeMember, assignManagerGroup, getProjects } from '../api/projectsApi';
+import { getProject, getMembers, removeMember, assignManagerGroup, getProjects, getProjectHistory } from '../api/projectsApi';
 import ChangeRoleModal from '../components/Projects/ChangeRoleModal';
 import MemberStatsModal from '../components/Projects/MemberStatsModal';
 import { getTasks, updateTaskStatus, reassignTask } from '../api/tasksApi';
@@ -29,7 +29,7 @@ import {
   PlusIcon, UserPlusIcon, ChartBarIcon,
   CheckCircleIcon, ClockIcon, DocumentCheckIcon, TableCellsIcon,
   FolderIcon, UsersIcon, ClipboardDocumentListIcon,
-  Bars3Icon, XMarkIcon,
+  Bars3Icon, XMarkIcon, Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 import { formatDate } from '../utils/dateUtils';
 import { getErrorMessage } from '../utils/errorUtils';
@@ -66,6 +66,8 @@ export default function ProjectDashboard() {
   const [showSubmit, setShowSubmit] = useState(false);
   const [showReview, setShowReview] = useState(false);
   const [showDelegate, setShowDelegate] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -111,6 +113,15 @@ export default function ProjectDashboard() {
     document.addEventListener('visibilitychange', poll);
     return () => { clearInterval(id); document.removeEventListener('visibilitychange', poll); };
   }, [fetchAll]);
+
+  useEffect(() => {
+    if (activeTab !== 'history') return;
+    setHistoryLoading(true);
+    getProjectHistory(projectId)
+      .then(res => setHistory(res.data))
+      .catch(() => toast.error('Failed to load history'))
+      .finally(() => setHistoryLoading(false));
+  }, [activeTab, projectId]);
 
   const handleAcceptTask = async (task) => {
     try {
@@ -235,6 +246,7 @@ export default function ProjectDashboard() {
     ...(isAdminOrManager ? [{ key: 'assignments', label: 'Assignments', icon: TableCellsIcon }] : []),
     { key: 'members',     label: 'Members',         icon: UsersIcon, count: members.length },
     { key: 'stats',       label: 'Stats & Ranking', icon: ChartBarIcon },
+    { key: 'history',     label: 'History',         icon: ClockIcon },
   ];
 
   const otherProjects = allProjects.filter(p => p.id !== projectId);
@@ -324,6 +336,18 @@ export default function ProjectDashboard() {
           ))}
         </div>
       )}
+
+      {/* Settings */}
+      <div className="mt-auto px-3 pb-3 pt-2 border-t border-gray-100">
+        <Link
+          to={`/projects/${projectId}/settings`}
+          onClick={() => setSidebarOpen(false)}
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition"
+        >
+          <Cog6ToothIcon className="w-4 h-4 flex-shrink-0" />
+          Settings
+        </Link>
+      </div>
     </div>
   );
 
@@ -752,6 +776,77 @@ export default function ProjectDashboard() {
                   <RankingTable ranking={ranking} currentUserId={user?.userId} />
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* ── History Tab ───────────────────────────────── */}
+          {activeTab === 'history' && (
+            <div className="flex flex-col gap-4">
+              {historyLoading ? (
+                <div className="flex justify-center py-12"><LoadingSpinner /></div>
+              ) : history.length === 0 ? (
+                <div className="bg-white rounded-xl border border-gray-200 p-10 text-center text-sm text-gray-400">
+                  No project history yet.
+                </div>
+              ) : (
+                history.map(day => {
+                  const s = day.stats;
+                  const dayChips = [
+                    s.membersJoined > 0 && { label: `${s.membersJoined} joined`, cls: 'bg-green-50 text-green-700' },
+                    s.membersLeft > 0 && { label: `${s.membersLeft} left`, cls: 'bg-gray-100 text-gray-600' },
+                    s.rolesChanged > 0 && { label: `${s.rolesChanged} role change${s.rolesChanged !== 1 ? 's' : ''}`, cls: 'bg-indigo-50 text-indigo-700' },
+                    s.inviteLinksCreated > 0 && { label: `${s.inviteLinksCreated} link${s.inviteLinksCreated !== 1 ? 's' : ''} created`, cls: 'bg-blue-50 text-blue-700' },
+                    s.inviteLinksDeleted > 0 && { label: `${s.inviteLinksDeleted} link${s.inviteLinksDeleted !== 1 ? 's' : ''} deleted`, cls: 'bg-red-50 text-red-600' },
+                    s.projectUpdated && { label: 'Project updated', cls: 'bg-amber-50 text-amber-700' },
+                  ].filter(Boolean);
+
+                  return (
+                    <div key={day.date} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                        <p className="text-sm font-semibold text-gray-700">
+                          {new Date(day.date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">{day.events.length} event{day.events.length !== 1 ? 's' : ''}</p>
+                      </div>
+
+                      <div className="divide-y divide-gray-50">
+                        {day.events.map(ev => {
+                          const dotCls = {
+                            MemberJoined: 'bg-green-400',
+                            MemberLeft: 'bg-gray-400',
+                            MemberRemoved: 'bg-red-400',
+                            RoleAssigned: 'bg-indigo-400',
+                            RoleChanged: 'bg-indigo-400',
+                            ProjectCreated: 'bg-purple-400',
+                            ProjectUpdated: 'bg-amber-400',
+                            InviteLinkCreated: 'bg-blue-400',
+                            InviteLinkDeleted: 'bg-rose-400',
+                          }[ev.eventType] || 'bg-gray-300';
+                          return (
+                            <div key={ev.id} className="flex items-start gap-3 px-4 py-3">
+                              <div className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${dotCls}`} />
+                              <p className="flex-1 text-sm text-gray-800">{ev.description}</p>
+                              <span className="text-xs text-gray-400 flex-shrink-0 pt-0.5">
+                                {new Date(ev.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {dayChips.length > 0 && (
+                        <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100 flex flex-wrap gap-1.5">
+                          {dayChips.map(chip => (
+                            <span key={chip.label} className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${chip.cls}`}>
+                              {chip.label}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
             </div>
           )}
         </main>
