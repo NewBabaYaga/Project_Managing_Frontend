@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { FolderIcon, UsersIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import { formatDate } from '../../utils/dateUtils';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5162';
+import { API_BASE } from '../../api/axiosInstance';
 
 export default function ProjectCard({ project }) {
   const navigate = useNavigate();

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE } from '../../api/axiosInstance';
 
 const COLORS = [
   'bg-indigo-500', 'bg-purple-500', 'bg-pink-500', 'bg-blue-500',
@@ -11,7 +12,6 @@ function colorFor(name) {
   return COLORS[Math.abs(hash) % COLORS.length];
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5162';
 
 export default function Avatar({ name = '', avatarUrl = null, size = 'md', className = '' }) {
   const [imgError, setImgError] = useState(false);

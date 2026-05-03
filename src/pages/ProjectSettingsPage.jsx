@@ -9,12 +9,11 @@ import {
   getProject, updateProject, uploadProjectImage,
   getInviteLinks, deleteInviteLink, generateInviteLink,
 } from '../api/projectsApi';
+import { API_BASE } from '../api/axiosInstance';
 import {
   ArrowLeftIcon, CameraIcon, LinkIcon, TrashIcon,
   PlusIcon, ClipboardDocumentIcon, ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5162';
 
 function formatExpiry(expiresAt) {
   if (!expiresAt) return 'Never';
