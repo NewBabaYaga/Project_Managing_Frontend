@@ -9,6 +9,7 @@ import TaskDetailPage from './pages/TaskDetailPage';
 import UserProfilePage from './pages/UserProfilePage';
 import PublicProfilePage from './pages/PublicProfilePage';
 import InvitePage from './pages/InvitePage';
+import ProjectSettingsPage from './pages/ProjectSettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/projects/:id" element={<ProjectDashboard />} />
           <Route path="/projects/:id/dashboard" element={<ProjectDashboard />} />
+          <Route path="/projects/:id/settings" element={<ProjectSettingsPage />} />
           <Route path="/projects/:projectId/tasks/:taskId" element={<TaskDetailPage />} />
           <Route path="/profile" element={<UserProfilePage />} />
           <Route path="/users/:userId" element={<PublicProfilePage />} />
