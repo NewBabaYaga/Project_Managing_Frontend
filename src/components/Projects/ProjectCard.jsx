@@ -10,24 +10,23 @@ export default function ProjectCard({ project }) {
   return (
     <div
       onClick={() => navigate(`/projects/${project.id}`)}
-      className="bg-white rounded-xl border border-gray-200 cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all group overflow-hidden"
+      className="bg-white rounded-xl border border-gray-200 cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all group"
     >
-      {project.imageUrl && (
-        <div className="h-28 w-full overflow-hidden">
-          <img
-            src={`${API_BASE}${project.imageUrl}`}
-            alt={project.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        </div>
-      )}
       <div className="p-5">
         <div className="flex items-start gap-3 mb-3">
-          {!project.imageUrl && (
-            <div className="p-2 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition flex-shrink-0">
-              <FolderIcon className="w-5 h-5 text-indigo-600" />
-            </div>
-          )}
+          <div className="rounded-lg overflow-hidden flex-shrink-0 group-hover:opacity-90 transition">
+            {project.imageUrl ? (
+              <img
+                src={`${API_BASE}${project.imageUrl}`}
+                alt={project.name}
+                className="w-9 h-9 object-cover"
+              />
+            ) : (
+              <div className="p-2 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition">
+                <FolderIcon className="w-5 h-5 text-indigo-600" />
+              </div>
+            )}
+          </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-gray-900 truncate">{project.name}</h3>
             <p className="text-sm text-gray-500 line-clamp-2 mt-0.5">{project.description || 'No description'}</p>
