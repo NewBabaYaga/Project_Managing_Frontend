@@ -137,3 +137,12 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Added:
+node_modules/
+dist/
+.cache/
+*.local
+.env
+.env.local
+
